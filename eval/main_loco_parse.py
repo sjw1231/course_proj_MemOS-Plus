@@ -13,10 +13,11 @@ import tiktoken
 import os
 total_tokens = 0
 num_samples=0
+
 # Initialize OpenAI client
 client = OpenAIClient(
-    api_key='',
-    base_url='https://cn2us02.opapi.win/v1'
+    api_key="",
+    base_url="https://api.ohmygpt.com/v1"
 )
 
 # Heat threshold

@@ -11,6 +11,8 @@ DATA_STORAGE_PATH = "data_memoryos_demo"
 LLM_MODEL = "gpt-4o-mini"
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
 
+COMPRESS_MODE = True
+
 def simple_demo():
     print("MemoryOS Simple Demo")
     
@@ -29,8 +31,8 @@ def simple_demo():
             retrieval_queue_capacity=10,
             long_term_knowledge_capacity=100,
             mid_term_similarity_threshold=0.6,
-            embedding_model_name=EMBEDDING_MODEL_NAME
-            
+            embedding_model_name=EMBEDDING_MODEL_NAME,
+            compress_mode=COMPRESS_MODE,   
         )
         print("MemoryOS initialized successfully!\n")
     except Exception as e:

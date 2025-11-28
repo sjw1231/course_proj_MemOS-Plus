@@ -369,36 +369,36 @@ class MidTermMemory:
                         "matched_pages": sorted(matched_pages_in_session, key=lambda x: x["score"], reverse=True) # Sort pages by score
                     })
                     
-        # [新增] Graph RAG 增强：获取这些 Top Session 的邻居
-        matched_session_ids = [s["session_id"] for s in results]
-        neighbor_sessions = self.get_direct_neighbors(matched_session_ids)
+        # # [新增] Graph RAG 增强：获取这些 Top Session 的邻居
+        # matched_session_ids = [s["session_id"] for s in results]
+        # neighbor_sessions = self.get_direct_neighbors(matched_session_ids)
         
-        # [新增] 合并上下文 (去重)
-        seen_ids = set([s["session_id"] for s in results])
-        final_context_sessions = results # 这里是 search_sessions 返回的特定格式
-        for ns in neighbor_sessions:
-            if ns['id'] not in seen_ids:
-                matched_pages_in_session = []
-                for page in ns.get("details", []):
-                    page_embedding = np.array(page["page_embedding"], dtype=np.float32)
-                    # page_keywords = set(page.get("page_keywords", []))
+        # # [新增] 合并上下文 (去重)
+        # seen_ids = set([s["session_id"] for s in results])
+        # final_context_sessions = results # 这里是 search_sessions 返回的特定格式
+        # for ns in neighbor_sessions:
+        #     if ns['id'] not in seen_ids:
+        #         matched_pages_in_session = []
+        #         for page in ns.get("details", []):
+        #             page_embedding = np.array(page["page_embedding"], dtype=np.float32)
+        #             # page_keywords = set(page.get("page_keywords", []))
                     
-                    page_sim_score = float(np.dot(page_embedding, query_vec))
-                    # Can also add keyword sim for pages if needed, but keeping it simpler for now
+        #             page_sim_score = float(np.dot(page_embedding, query_vec))
+        #             # Can also add keyword sim for pages if needed, but keeping it simpler for now
 
-                    if page_sim_score >= page_similarity_threshold:
-                        matched_pages_in_session.append({"page_data": page, "score": page_sim_score})
+        #             if page_sim_score >= page_similarity_threshold:
+        #                 matched_pages_in_session.append({"page_data": page, "score": page_sim_score})
                 
-                # 将 neighbor session 转换为 search_results 相同的格式以便统一处理
-                final_context_sessions.append({
-                    "session_id": ns['id'],
-                    "session_summary": ns['summary'],
-                    "session_relevance_score": 0.5, # 邻居赋予一个默认权重，或使用边的 weight
-                    "matched_pages": matched_pages_in_session # 邻居通常意味着整个 session 都相关，或者需要进一步过滤
-                })
-                seen_ids.add(ns['id'])
+        #         # 将 neighbor session 转换为 search_results 相同的格式以便统一处理
+        #         final_context_sessions.append({
+        #             "session_id": ns['id'],
+        #             "session_summary": ns['summary'],
+        #             "session_relevance_score": 0.5, # 邻居赋予一个默认权重，或使用边的 weight
+        #             "matched_pages": matched_pages_in_session # 邻居通常意味着整个 session 都相关，或者需要进一步过滤
+        #         })
+        #         seen_ids.add(ns['id'])
+        # results = final_context_sessions
         
-        results = final_context_sessions
         self.save() # Save changes from access updates
         # Sort final results by session_relevance_score
         return sorted(results, key=lambda x: x["session_relevance_score"], reverse=True)
@@ -481,7 +481,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 class GraphMemoryLayer:
-    def __init__(self, similarity_threshold=0.75):
+    def __init__(self, similarity_threshold=0.6):
         self.graph = nx.Graph()
         self.similarity_threshold = similarity_threshold
 

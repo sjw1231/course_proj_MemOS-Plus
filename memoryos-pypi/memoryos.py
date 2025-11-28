@@ -26,6 +26,15 @@ except ImportError:
 H_PROFILE_UPDATE_THRESHOLD = 5.0 
 DEFAULT_ASSISTANT_ID = "default_assistant_profile"
 
+# ========================= compress with LLMLingua2 =========================
+from llmlingua import PromptCompressor
+
+compressor = PromptCompressor(
+    model_name="microsoft/llmlingua-2-xlm-roberta-large-meetingbank",
+    use_llmlingua2=True
+)
+# ========================= compress with LLMLingua2 =========================
+
 class Memoryos:
     def __init__(self, user_id: str, 
                  openai_api_key: str, 
@@ -40,7 +49,8 @@ class Memoryos:
                  mid_term_similarity_threshold=0.6,
                  llm_model="gpt-4o-mini",
                  embedding_model_name: str = "all-MiniLM-L6-v2",
-                 embedding_model_kwargs: dict = None
+                 embedding_model_kwargs: dict = None,
+                 compress_mode: bool = False,
                  ):
         self.user_id = user_id
         self.assistant_id = assistant_id
@@ -48,6 +58,7 @@ class Memoryos:
         self.llm_model = llm_model
         self.mid_term_similarity_threshold = mid_term_similarity_threshold
         self.embedding_model_name = embedding_model_name
+        self.compress_mode = compress_mode
         
         # Smart defaults for embedding_model_kwargs
         if embedding_model_kwargs is None:
@@ -226,6 +237,25 @@ class Memoryos:
         """
         if not timestamp:
             timestamp = get_timestamp()
+            
+        if self.compress_mode:
+            user_input = compressor.compress_prompt_llmlingua2(
+                user_input,
+                rate=1.0,
+                force_tokens=['\n', '.', '!', '?', ','],
+                chunk_end_tokens=['.', '\n'],
+                return_word_label=True,
+                drop_consecutive=True
+            )['compressed_prompt']
+            
+            agent_response = compressor.compress_prompt_llmlingua2(
+                agent_response,
+                rate=1.0,
+                force_tokens=['\n', '.', '!', '?', ','],
+                chunk_end_tokens=['.', '\n'],
+                return_word_label=True,
+                drop_consecutive=True
+            )['compressed_prompt']
         
         qa_pair = {
             "user_input": user_input,
