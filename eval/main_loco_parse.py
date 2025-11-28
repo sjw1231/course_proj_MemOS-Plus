@@ -14,10 +14,13 @@ import os
 total_tokens = 0
 num_samples=0
 
+API_KEY=""
+BASE_URL=""
+
 # Initialize OpenAI client
 client = OpenAIClient(
-    api_key="",
-    base_url="https://api.ohmygpt.com/v1"
+    api_key=API_KEY,
+    base_url=BASE_URL,
 )
 
 # Heat threshold
