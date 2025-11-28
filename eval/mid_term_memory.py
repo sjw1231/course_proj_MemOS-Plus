@@ -1,17 +1,18 @@
 import json
+import os
 import numpy as np
 from collections import defaultdict
 import faiss
 import heapq
-from utils import get_timestamp, generate_id, get_embedding, normalize_vector, llm_extract_keywords
 from datetime import datetime
 from utils import OpenAIClient
 from utils import get_timestamp, generate_id, get_embedding, normalize_vector, llm_extract_keywords, compute_time_decay
 
 client = OpenAIClient(
-    api_key='',
-    base_url='https://cn2us02.opapi.win/v1'
+    api_key=os.environ.get("OPENAI_API_KEY", ""),
+    base_url=os.environ.get("OPENAI_BASE_URL", ""),
 )
+
 
 def compute_recency(last_visit_time, tau=24):
     from datetime import datetime
@@ -58,7 +59,7 @@ class MidTermMemory:
             return
         
         lfu_sid = min(self.access_frequency, key=self.access_frequency.get)
-        print(f"中期记忆：LFU 淘汰会话段 {lfu_sid}。")
+        print(f"中期记忆：LFU delete session {lfu_sid}。")
         
         if lfu_sid not in self.sessions:
             del self.access_frequency[lfu_sid]
