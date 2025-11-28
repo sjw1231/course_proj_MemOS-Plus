@@ -239,23 +239,30 @@ class Memoryos:
             timestamp = get_timestamp()
             
         if self.compress_mode:
-            user_input = compressor.compress_prompt_llmlingua2(
+            print("## Compressing memory with LLMLingua2 before storage...")
+            res1 = compressor.compress_prompt_llmlingua2(
                 user_input,
-                rate=1.0,
+                rate=0.5,
                 force_tokens=['\n', '.', '!', '?', ','],
                 chunk_end_tokens=['.', '\n'],
                 return_word_label=True,
                 drop_consecutive=True
-            )['compressed_prompt']
+            )
+            user_input=res1['compressed_prompt']
             
-            agent_response = compressor.compress_prompt_llmlingua2(
+            res2 = compressor.compress_prompt_llmlingua2(
                 agent_response,
-                rate=1.0,
+                rate=0.5,
                 force_tokens=['\n', '.', '!', '?', ','],
                 chunk_end_tokens=['.', '\n'],
                 return_word_label=True,
                 drop_consecutive=True
-            )['compressed_prompt']
+            )
+            agent_response=res2['compressed_prompt']
+            print("## Compress rate user_input:", res1['rate'], " agent_response:", res2['rate'])
+        else:
+            print("## Compression mode disabled. Storing original memory.")
+            pass  # No compression
         
         qa_pair = {
             "user_input": user_input,

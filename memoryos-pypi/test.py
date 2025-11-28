@@ -5,13 +5,17 @@ from memoryos import Memoryos
 # --- Basic Configuration ---
 USER_ID = "demo_user"
 ASSISTANT_ID = "demo_assistant"
-API_KEY = ""  # Replace with your key
-BASE_URL = "https://openrouter.ai/api/v1"  # Optional: if using a custom OpenAI endpoint
+# export OPENAI_API_KEY="your_openai_api_key"
+# export OPENAI_BASE_URL="your_openai_base_url"  # e.g., "https://openrouter.ai/api/v1"
+API_KEY=os.environ.get("OPENAI_API_KEY", "")
+BASE_URL=os.environ.get("OPENAI_BASE_URL", "")
 DATA_STORAGE_PATH = "data_memoryos_demo"
 LLM_MODEL = "gpt-4o-mini"
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
 
+# ======= compress mode =============== 
 COMPRESS_MODE = True
+# =====================================
 
 def simple_demo():
     print("MemoryOS Simple Demo")

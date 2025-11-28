@@ -1,3 +1,4 @@
+import os
 import time
 import uuid
 import openai
@@ -5,8 +6,8 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from openai import OpenAI
 gpt_client = OpenAI(
-        api_key='',
-    base_url='https://cn2us02.opapi.win/v1'
+    api_key=os.environ.get("OPENAI_API_KEY", ""),
+    base_url=os.environ.get("OPENAI_BASE_URL", ""),
 )
 def get_timestamp():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())

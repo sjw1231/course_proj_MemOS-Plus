@@ -14,8 +14,8 @@ import os
 total_tokens = 0
 num_samples=0
 
-API_KEY=""
-BASE_URL=""
+API_KEY=os.environ.get("OPENAI_API_KEY", "")
+BASE_URL=os.environ.get("OPENAI_BASE_URL", "")
 
 # Initialize OpenAI client
 client = OpenAIClient(

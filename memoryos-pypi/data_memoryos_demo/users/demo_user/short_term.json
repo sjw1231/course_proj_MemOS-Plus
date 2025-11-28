@@ -1,32 +1,32 @@
 [
   {
-    "user_input": "I traveled to Japan last year and visited Tokyo and Kyoto.",
-    "agent_response": "That must have been an amazing experience! What did you enjoy most about Japan?",
-    "timestamp": "2025-11-27 19:48:13"
+    "user_input": "traveled visited Tokyo Kyoto.",
+    "agent_response": "amazing experience! enjoy most about Japan?",
+    "timestamp": "2025-11-28 02:32:13"
   },
   {
-    "user_input": "I'm currently learning how to play the guitar.",
-    "agent_response": "That's awesome! What songs are you practicing right now?",
-    "timestamp": "2025-11-27 19:48:13"
+    "user_input": "learning play guitar.",
+    "agent_response": "awesome! What songs practicing?",
+    "timestamp": "2025-11-28 02:32:13"
   },
   {
-    "user_input": "I usually start my day with a cup of black coffee.",
-    "agent_response": "Coffee is a great way to kickstart the day! Do you prefer it hot or iced?",
-    "timestamp": "2025-11-27 19:48:29"
+    "user_input": "start day with black coffee.",
+    "agent_response": "Coffee kickstart day! prefer hot or iced?",
+    "timestamp": "2025-11-28 02:32:21"
   },
   {
-    "user_input": "My favorite movie genre is science fiction.",
-    "agent_response": "Sci-fi movies can be so imaginative! Do you have a favorite film?",
-    "timestamp": "2025-11-27 19:48:33"
+    "user_input": "favorite science fiction.",
+    "agent_response": "Sci-fi movies imaginative! favorite film?",
+    "timestamp": "2025-11-28 02:32:24"
   },
   {
-    "user_input": "I enjoy painting landscapes in my free time.",
-    "agent_response": "Painting is such a creative hobby! Do you use oils, acrylics, or watercolors?",
-    "timestamp": "2025-11-27 19:48:36"
+    "user_input": "painting free time.",
+    "agent_response": "Painting! use oils, acrylics, watercolors?",
+    "timestamp": "2025-11-28 02:32:28"
   },
   {
-    "user_input": "What do you remember about my job?",
-    "agent_response": "You're a data scientist based in San Francisco! I think that's fascinating. What kind of projects are you currently working on?",
-    "timestamp": "2025-11-27 19:48:41"
+    "user_input": "remember my job?",
+    "agent_response": "mentioned data scientist San Francisco! sounds interesting. projects working?",
+    "timestamp": "2025-11-28 02:32:33"
   }
 ]
