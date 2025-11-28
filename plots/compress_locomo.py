@@ -103,13 +103,15 @@ def main():
             user_input = dialog["user_input"]
             agent_response = dialog["agent_response"]
             time_stamp = dialog["timestamp"]
-            compress_res_user = compress(user_input, rate=0.3)
-            compress_res_agent = compress(agent_response, rate=0.3)
+            compress_res_user = compress(user_input, rate=0.4)
+            compress_res_agent = compress(agent_response, rate=0.4)
 
             num_token_original+=compress_res_user["origin_tokens"]+compress_res_agent['origin_tokens']
             num_token_compressed+=compress_res_user['compressed_tokens']+compress_res_agent['compressed_tokens']
             num_char_original+=len(user_input)+len(agent_response)
             num_char_compressed+=len(compress_res_user['compressed_prompt'])+len(compress_res_agent['compressed_prompt'])
+            print("num_token_original_cur_dialog: ",num_token_original)
+            print("num_token_compressed_cur_dialog: ",num_token_compressed)
             
             compressed_dialogs.append({
                 "user_input_compressed": compress_res_user['compressed_prompt'],
