@@ -11,6 +11,7 @@ import openai
 import time
 import tiktoken
 import os
+from tqdm import tqdm
 total_tokens = 0
 num_samples=0
 
@@ -241,7 +242,7 @@ def main():
         retrieval_system = RetrievalAndAnswer(short_mem, mid_mem, long_mem, dynamic_updater, queue_capacity=10)
         
         # Store conversation history in memory system
-        for dialog in processed_dialogs:
+        for dialog in tqdm(processed_dialogs,desc=f"Storing dialog for sample-idx: {idx}"):
             short_mem.add_qa_pair(dialog)
             if short_mem.is_full():
                 dynamic_updater.bulk_evict_and_update_mid_term()
@@ -249,7 +250,7 @@ def main():
         
         # Process QA pairs
         qa_count = len(qa_pairs)
-        for qa_idx, qa in enumerate(qa_pairs):
+        for qa_idx, qa in tqdm(enumerate(qa_pairs),desc=f"handling qa for sample-idx: {idx}"):
             print(f"  处理问答 {qa_idx + 1}/{qa_count}")
             question = qa["question"]
             original_answer = qa.get("answer", "")
