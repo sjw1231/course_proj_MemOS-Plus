@@ -87,56 +87,52 @@ def main():
             json.dump([], f, ensure_ascii=False, indent=4)
         
     dataset=dataset[cur_idx:]
-    compressed_dataset=[]
+
     for idx, sample in enumerate(dataset):
         sample_id = sample.get("sample_id", "unknown_sample")
         conversation_data = sample["conversation"]
 
         processed_dialogs = process_conversation(conversation_data)
-        compressed_dialogs=[]
 
-        num_token_original=0
-        num_token_compressed=0
+
         num_char_original=0
         num_char_compressed=0
+        user_input_dialog=""
+        agent_response_dialog=""
         for dialog in tqdm(processed_dialogs):
             user_input = dialog["user_input"]
             agent_response = dialog["agent_response"]
-            time_stamp = dialog["timestamp"]
-            compress_res_user = compress(user_input, rate=0.4)
-            compress_res_agent = compress(agent_response, rate=0.4)
-
-            cur_n_token_ori=compress_res_user["origin_tokens"]+compress_res_agent['origin_tokens']
-            cur_n_token_comp=compress_res_user['compressed_tokens']+compress_res_agent['compressed_tokens']
-            num_token_original+=cur_n_token_ori
-            num_token_compressed+=cur_n_token_comp
-            num_char_original+=len(user_input)+len(agent_response)
-            num_char_compressed+=len(compress_res_user['compressed_prompt'])+len(compress_res_agent['compressed_prompt'])
-            print("num_token_original_cur_dialog: ",cur_n_token_ori)
-            print("num_token_compressed_cur_dialog: ",cur_n_token_comp)
             
-            compressed_dialogs.append({
-                "user_input_compressed": compress_res_user['compressed_prompt'],
-                "agent_response_compressed": compress_res_agent['compressed_prompt'],
-                "u_token_num_0": compress_res_user['origin_tokens'],
-                "u_token_num_1": compress_res_user['compressed_tokens'],
-                "a_token_num_0": compress_res_agent['origin_tokens'],
-                "a_token_num_1": compress_res_agent['compressed_tokens'],
-                "timestamp": time_stamp,
-            })
+            user_input_dialog += user_input + " "
+            agent_response_dialog += agent_response + " "
+            
+        compress_res_user = compress(user_input_dialog, rate=0.4)
+        compress_res_agent = compress(agent_response_dialog, rate=0.4)
         
-        compressed_dataset.append({
+        num_char_original=len(user_input_dialog)+len(agent_response_dialog)
+        num_char_compressed=len(compress_res_user['compressed_prompt'])+len(compress_res_agent['compressed_prompt'])
+
+        num_token_ori=compress_res_user["origin_tokens"]+compress_res_agent['origin_tokens']
+        num_token_compressed=compress_res_user['compressed_tokens']+compress_res_agent['compressed_tokens']
+        compressed_user_input = compress_res_user['compressed_prompt']
+        compressed_agent_response = compress_res_agent['compressed_prompt']
+        
+        print("num_token_original_cur_dialog: ",num_token_ori)
+        print("num_token_compressed_cur_dialog: ",num_token_compressed)
+        
+        curr_sample={
             "sample_id": sample_id,
-            "compressed_dialogs": compressed_dialogs,
-            "num_token_original":num_token_original,
+            "compressed_user_input": compressed_user_input,
+            "compressed_agent_response": compressed_agent_response,
+            "num_token_original":num_token_ori,
             "num_token_compressed":num_token_compressed,
             "num_char_original":num_char_original,
             "num_char_compressed":num_char_compressed,
-        })
+        }
         
         with open(save_path, 'r') as f:
             existing_samples = json.load(f)
-        existing_samples.append(compressed_dataset[-1])
+        existing_samples.append(curr_sample)
         
         with open(save_path, 'w', encoding='utf-8') as f:
             json.dump(existing_samples, f, ensure_ascii=False, indent=4)
@@ -146,7 +142,10 @@ def main():
     global_num_char_compressed=0
     global_num_char_original=0
     
-    for x in compressed_dataset:
+    with open(save_path, 'r') as f:
+        existing_samples = json.load(f)
+    print(len(existing_samples))
+    for x in existing_samples:
         global_num_token_compressed+=x['num_token_compressed']
         global_num_token_original+=x['num_token_original']
         global_num_char_compressed+=x['num_char_compressed']

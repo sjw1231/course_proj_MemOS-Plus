@@ -1,0 +1,2 @@
+token ratio 39.1578
+char ratio 45.2314
