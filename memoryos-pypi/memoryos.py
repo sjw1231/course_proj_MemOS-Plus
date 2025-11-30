@@ -27,12 +27,27 @@ H_PROFILE_UPDATE_THRESHOLD = 5.0
 DEFAULT_ASSISTANT_ID = "default_assistant_profile"
 
 # ========================= compress with LLMLingua2 =========================
-from llmlingua import PromptCompressor
+# Lazy import to avoid loading if not needed
+_compressor = None
 
-compressor = PromptCompressor(
-    model_name="microsoft/llmlingua-2-xlm-roberta-large-meetingbank",
-    use_llmlingua2=True
-)
+def get_compressor():
+    """Lazy initialization of PromptCompressor to avoid CUDA errors on macOS"""
+    global _compressor
+    if _compressor is None:
+        try:
+            from llmlingua import PromptCompressor
+            import torch
+            # Use CPU on macOS, or if CUDA is not available
+            device_map = "cpu" if not torch.cuda.is_available() else "auto"
+            _compressor = PromptCompressor(
+                model_name="microsoft/llmlingua-2-xlm-roberta-large-meetingbank",
+                use_llmlingua2=True,
+                device_map=device_map
+            )
+        except Exception as e:
+            print(f"Warning: Failed to initialize PromptCompressor: {e}")
+            return None
+    return _compressor
 # ========================= compress with LLMLingua2 =========================
 
 class Memoryos:
@@ -239,26 +254,30 @@ class Memoryos:
             timestamp = get_timestamp()
             
         if self.compress_mode:
-            print("## Compressing memory with LLMLingua2 before storage...")
-            res1 = compressor.compress_prompt_llmlingua2(
-                user_input,
-                rate=0.5,
-                force_tokens=['\n', '.', '!', '?', ','],
-                chunk_end_tokens=['.', '\n'],
-                return_word_label=True,
-                drop_consecutive=True
-            )
-            user_input=res1['compressed_prompt']
-            
-            res2 = compressor.compress_prompt_llmlingua2(
-                agent_response,
-                rate=0.5,
-                force_tokens=['\n', '.', '!', '?', ','],
-                chunk_end_tokens=['.', '\n'],
-                return_word_label=True,
-                drop_consecutive=True
-            )
-            agent_response=res2['compressed_prompt']
+            compressor = get_compressor()
+            if compressor is None:
+                print("Warning: Compression mode enabled but compressor not available. Using original text.")
+            else:
+                print("## Compressing memory with LLMLingua2 before storage...")
+                res1 = compressor.compress_prompt_llmlingua2(
+                    user_input,
+                    rate=0.5,
+                    force_tokens=['\n', '.', '!', '?', ','],
+                    chunk_end_tokens=['.', '\n'],
+                    return_word_label=True,
+                    drop_consecutive=True
+                )
+                user_input=res1['compressed_prompt']
+                
+                res2 = compressor.compress_prompt_llmlingua2(
+                    agent_response,
+                    rate=0.5,
+                    force_tokens=['\n', '.', '!', '?', ','],
+                    chunk_end_tokens=['.', '\n'],
+                    return_word_label=True,
+                    drop_consecutive=True
+                )
+                agent_response=res2['compressed_prompt']
             print("## Compress rate user_input:", res1['rate'], " agent_response:", res2['rate'])
         else:
             print("## Compression mode disabled. Storing original memory.")
