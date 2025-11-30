@@ -66,6 +66,9 @@ class Memoryos:
                  embedding_model_name: str = "all-MiniLM-L6-v2",
                  embedding_model_kwargs: dict = None,
                  compress_mode: bool = False,
+                 # ===== 新增：knowledge routing 相关配置 =====
+                 knowledge_classifier_mode: str = "rule",  # "rule" or "llm"
+                 knowledge_classifier_llm_model: str = None,
                  ):
         self.user_id = user_id
         self.assistant_id = assistant_id
@@ -74,6 +77,15 @@ class Memoryos:
         self.mid_term_similarity_threshold = mid_term_similarity_threshold
         self.embedding_model_name = embedding_model_name
         self.compress_mode = compress_mode
+
+        # Knowledge classifier config
+        # mode: "rule"（默认，基于英文关键词） 或 "llm"（用当前 LLM 做分类）
+        self.knowledge_classifier_mode = knowledge_classifier_mode.lower()
+        if self.knowledge_classifier_mode not in ["rule", "llm"]:
+            print(f"Warning: Unknown knowledge_classifier_mode '{knowledge_classifier_mode}', fallback to 'rule'.")
+            self.knowledge_classifier_mode = "rule"
+        # 如果没有单独指定，用统一的 llm_model 做分类
+        self.knowledge_classifier_llm_model = knowledge_classifier_llm_model or self.llm_model
         
         # Smart defaults for embedding_model_kwargs
         if embedding_model_kwargs is None:
@@ -89,6 +101,7 @@ class Memoryos:
         print(f"Initializing Memoryos for user '{self.user_id}' and assistant '{self.assistant_id}'. Data path: {self.data_storage_path}")
         print(f"Using unified LLM model: {self.llm_model}")
         print(f"Using embedding model: {self.embedding_model_name} with kwargs: {self.embedding_model_kwargs}")
+        print(f"Knowledge classifier mode: {self.knowledge_classifier_mode} (LLM model: {self.knowledge_classifier_llm_model})")
 
         # Initialize OpenAI Client
         self.client = OpenAIClient(api_key=openai_api_key, base_url=openai_base_url)
@@ -148,6 +161,111 @@ class Memoryos:
         )
         
         self.mid_term_heat_threshold = mid_term_heat_threshold
+
+    # ========= New helper: knowledge routing on write =========
+    def _classify_knowledge_line_rule(self, line: str) -> str:
+        """
+        Rule-based classifier for a single knowledge line.
+        Returns: "personal", "factual", or "other".
+        规则基于英文关键词：尽量捕捉 user identity / preference，过滤明显 factual 的句子。
+        """
+        text = line.strip().lower()
+        if not text:
+            return "other"
+
+        # Personal-related cues (identity, background, preferences)
+        personal_keywords = [
+            "i am ", "i'm ", "i am a ", "i'm a ",
+            "my name is", "i work as", "i am working as",
+            "i study", "i am studying", "my major", "my degree",
+            "i live in", "i am from", "i come from",
+            "i like ", "i love ", "i enjoy ", "i prefer ",
+            "my favorite", "my favourite",
+            "my hobby", "my hobbies",
+            "my goal", "my goals", "my plan", "my plans",
+            "i want to", "i would like to",
+        ]
+        for kw in personal_keywords:
+            if kw in text:
+                return "personal"
+
+        # Factual / knowledge-like cues
+        factual_keywords = [
+            "is defined as", "is the definition of", "refers to",
+            "is called", "is known as",
+            "theorem", "lemma", "proposition", "corollary",
+            "equation", "formula", "proof", "algorithm",
+            "paper", "was proposed by", "was introduced by",
+            "published in", "first introduced in",
+            "in year", "in the year", "in ", "since ",
+        ]
+        for kw in factual_keywords:
+            if kw in text:
+                return "factual"
+
+        # 默认偏向 personal，这样不会完全改变原有行为，只在明显 factual 的时候过滤
+        return "personal"
+
+    def _classify_knowledge_line_llm(self, line: str) -> str:
+        """
+        LLM-based classifier for a single knowledge line.
+        Returns: "personal", "factual", or "other".
+        若调用或解析失败，会回退到 rule-based classifier。
+        """
+        text = line.strip()
+        if not text:
+            return "other"
+
+        system_prompt = (
+            "You are a classifier that decides whether a short statement from a dialogue "
+            "should be stored as a user's long-term personal memory.\n\n"
+            "Categories:\n"
+            "- personal: stable personal facts, identity, preferences, goals, constraints. Examples: "
+            "\"I am a student at Tsinghua University\", \"My favorite food is sushi\", "
+            "\"I want to work in robotics\", \"I live in San Francisco\".\n"
+            "- factual: general world knowledge, definitions, technical explanations or facts "
+            "that are not specific to this user. Examples: "
+            "\"Gamma squeeze is defined as ...\", \"The Transformer architecture was introduced in 2017\", "
+            "\"ETF stands for exchange-traded fund\".\n"
+            "- other: anything that does not clearly fall into the above two categories.\n\n"
+            "Return a JSON object with a single field 'type' whose value is one of: "
+            "\"personal\", \"factual\", or \"other\". Do not include any other text."
+        )
+
+        user_prompt = f"Statement:\n\"{text}\""
+
+        try:
+            content = self.client.chat_completion(
+                model=self.knowledge_classifier_llm_model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=0.0,
+                max_tokens=50,
+            )
+            parsed = json.loads(content)
+            t = parsed.get("type", "").lower().strip()
+            if t in ["personal", "factual", "other"]:
+                return t
+            else:
+                print(f"Knowledge classifier LLM returned unknown type '{t}', falling back to rule-based.")
+                return self._classify_knowledge_line_rule(line)
+        except Exception as e:
+            print(f"Knowledge classifier LLM error: {e}. Falling back to rule-based classification.")
+            return self._classify_knowledge_line_rule(line)
+
+    def _classify_knowledge_line(self, line: str) -> str:
+        """
+        Unified entry for knowledge line classification.
+        - If mode == 'llm', try LLM-based; on failure fallback to rule.
+        - If mode == 'rule', use rule-based directly.
+        """
+        if self.knowledge_classifier_mode == "llm":
+            return self._classify_knowledge_line_llm(line)
+        # default: rule-based
+        return self._classify_knowledge_line_rule(line)
+    # =========================================================
 
     def _trigger_profile_and_knowledge_update_if_needed(self):
         """
@@ -213,13 +331,22 @@ class Memoryos:
                     print("Memoryos: Updating user profile with integrated analysis...")
                     self.user_long_term_memory.update_user_profile(self.user_id, updated_user_profile, merge=False)  # 直接替换为新的完整画像
                 
+                # ======= 这里开始是“写入长期记忆时的 routing”逻辑 =======
                 # Add User Private Knowledge to user's LTM
                 if new_user_private_knowledge and new_user_private_knowledge.lower() != "none":
                     for line in new_user_private_knowledge.split('\n'):
-                         if line.strip() and line.strip().lower() not in ["none", "- none", "- none."]:
-                            self.user_long_term_memory.add_user_knowledge(line.strip())
+                        cleaned = line.strip()
+                        if not cleaned or cleaned.lower() in ["none", "- none", "- none."]:
+                            continue
+                        mem_type = self._classify_knowledge_line(cleaned)
+                        if mem_type == "personal":
+                            self.user_long_term_memory.add_user_knowledge(cleaned)
+                        else:
+                            # factual / other: 不写入用户 LTM，只打印一行 debug，防止长期记忆被知识点淹没
+                            print(f"Memoryos: Skipping non-personal knowledge line in user LTM ({mem_type}): {cleaned}")
+                # =======================================================
 
-                # Add Assistant Knowledge to assistant's LTM
+                # Add Assistant Knowledge to assistant's LTM（保持原有行为不变）
                 if new_assistant_knowledge and new_assistant_knowledge.lower() != "none":
                     for line in new_assistant_knowledge.split('\n'):
                         if line.strip() and line.strip().lower() not in ["none", "- none", "- none."]:
