@@ -72,7 +72,7 @@ def process_conversation(conversation_data):
 def main():
     
     rt_dir="plots"
-    save_path=f"{rt_dir}/compressed_locomo.json"
+    save_path=f"{rt_dir}/compressed_locomo_raw.json"
     locomo_path="eval/locomo10.json"
     dataset=json.load(open(locomo_path, 'r', encoding='utf-8'))
     total_samples = len(dataset)
@@ -150,6 +150,11 @@ def main():
         global_num_token_original+=x['num_token_original']
         global_num_char_compressed+=x['num_char_compressed']
         global_num_char_original+=x['num_char_original']
+    print(global_num_token_original)
+    print(global_num_token_compressed)
+    print(global_num_char_original)
+    print(global_num_char_compressed)
+    
     print(f"Token Compression Rate: {global_num_token_compressed/global_num_token_original}")
     print(f"Character Compression Rate: {global_num_char_compressed/global_num_char_original}")
         
