@@ -59,7 +59,7 @@ class MidTermMemory:
             return
         
         lfu_sid = min(self.access_frequency, key=self.access_frequency.get)
-        print(f"中期记忆：LFU delete session {lfu_sid}。")
+        # print(f"中期记忆：LFU delete session {lfu_sid}。")
         
         if lfu_sid not in self.sessions:
             del self.access_frequency[lfu_sid]
@@ -116,7 +116,7 @@ class MidTermMemory:
         session_obj["H_segment"] = compute_segment_heat(session_obj)
         self.access_frequency[session_id] = 0
         heapq.heappush(self.heap, (-session_obj["H_segment"], session_id))
-        print(f"中期记忆：新增会话段 {session_id}，初始热度 {session_obj['H_segment']:.2f}。")
+        # print(f"中期记忆：新增会话段 {session_id}，初始热度 {session_obj['H_segment']:.2f}。")
         if len(self.sessions) > self.max_capacity:
             self.evict_lfu()
         self.save()
@@ -141,7 +141,7 @@ class MidTermMemory:
                 best_sid = sid
         
         if best_sim >= 0 and best_sid is not None:
-            print(f"中期记忆：尝试合并到会话段 {best_sid}（摘要相似度 {best_sim:.2f}）。")
+            # print(f"中期记忆：尝试合并到会话段 {best_sid}（摘要相似度 {best_sim:.2f}）。")
             session = self.sessions[best_sid]
             session_keywords = set(session.get("summary_keywords", []))
             new_kw_set = set(new_keywords)
@@ -153,7 +153,7 @@ class MidTermMemory:
             overall_score = best_sim + alpha * s_top
             
             if overall_score >= similarity_threshold:
-                print(f"中期记忆：综合得分 {overall_score:.2f} 满足合并条件，将页面追加。")
+                # print(f"中期记忆：综合得分 {overall_score:.2f} 满足合并条件，将页面追加。")
                 for p in pages:
                     if "page_id" not in p:
                         p["page_id"] = generate_id("page")
@@ -169,10 +169,10 @@ class MidTermMemory:
                     session["details"].append(p)
                 session["timestamp"] = get_timestamp()
             else:
-                print("中期记忆：综合得分不足，新增会话段。")
+                # print("中期记忆：综合得分不足，新增会话段。")
                 self.add_session(summary, pages)
         else:
-            print("中期记忆：无相似会话段，新建会话段。")
+            # print("中期记忆：无相似会话段，新建会话段。")
             self.add_session(summary, pages)
         
         if best_sid is not None and best_sid in self.sessions:
@@ -239,7 +239,7 @@ class MidTermMemory:
                     session["R_recency"] = compute_time_decay(session["last_visit_time"], get_timestamp(), tau)
                     session["access_count"] += 1
                     session["H_segment"] = compute_segment_heat(session)
-                    print(f"中期记忆：会话段 {sid} 命中，匹配 {len(matched_pages)} 个 QA 对。")
+                    # print(f"中期记忆：会话段 {sid} 命中，匹配 {len(matched_pages)} 个 QA 对。")
                     results.append({
                         "session": session,
                         "matched_pages": matched_pages,
@@ -255,7 +255,7 @@ class MidTermMemory:
         with open(self.file_path, "w", encoding="utf-8") as f:
             data = {"sessions": sessions_to_save, "access_frequency": dict(self.access_frequency)}
             json.dump(data, f, ensure_ascii=False, indent=2)
-        print("中期记忆：保存成功。")
+        # print("中期记忆：保存成功。")
 
     def load(self):
         try:
@@ -264,9 +264,9 @@ class MidTermMemory:
                 self.sessions = data.get("sessions", {})
                 self.access_frequency = defaultdict(int, data.get("access_frequency", {}))
             self.rebuild_heap()
-            print("中期记忆：加载成功。")
+            # print("中期记忆：加载成功。")
         except Exception:
             self.sessions = {}
             self.access_frequency = defaultdict(int)
             self.heap = []
-            print("中期记忆：无历史数据。")
+            # print("中期记忆：无历史数据。")

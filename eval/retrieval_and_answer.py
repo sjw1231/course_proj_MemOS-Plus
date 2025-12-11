@@ -11,7 +11,7 @@ class RetrievalAndAnswer:
         self.retrieval_queue = deque(maxlen=queue_capacity)
 
     def retrieve(self, user_query, segment_threshold=0.7, page_threshold=0.7, knowledge_threshold=0.7, client=None):
-            print("检索：开始检索中期记忆...")
+            # print("检索：开始检索中期记忆...")
             matched = self.mid_term_memory.search_sessions_by_summary(user_query, client, segment_threshold, page_threshold)
             
             # 使用堆来维护分数最高的页面
@@ -34,10 +34,10 @@ class RetrievalAndAnswer:
             for score, _, page in sorted(top_pages_heap, key=lambda x: x[0], reverse=True):
                 self.retrieval_queue.append(page)
             
-            print(f"检索：中期记忆召回 {len(self.retrieval_queue)} 个 QA 对到检索队列。")
+            # print(f"检索：中期记忆召回 {len(self.retrieval_queue)} 个 QA 对到检索队列。")
             long_term_info = self.long_term_memory.search_knowledge(user_query, threshold=knowledge_threshold)
-            # print(long_term_info[0].keys())
-            print(f"检索：长期记忆召回 {len(long_term_info)} 个知识条目。")
+            # # print(long_term_info[0].keys())
+            # print(f"检索：长期记忆召回 {len(long_term_info)} 个知识条目。")
             
             return {
                 "retrieval_queue": list(self.retrieval_queue),

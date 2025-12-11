@@ -45,7 +45,7 @@ def update_user_profile_from_top_segment(mid_mem, long_mem, sample_id, client):
         
         un_analyzed = [p for p in session["details"] if not p.get("analyzed", False)]
         if un_analyzed:
-            print(f"Updating user profile: Segment {sid} heat {current_heat:.2f} exceeds threshold, starting profile update...")
+            # print(f"Updating user profile: Segment {sid} heat {current_heat:.2f} exceeds threshold, starting profile update...")
             
             old_profile = long_mem.get_raw_user_profile(sample_id)
             
@@ -80,7 +80,7 @@ def update_user_profile_from_top_segment(mid_mem, long_mem, sample_id, client):
             session["last_visit_time"] = get_timestamp()
             mid_mem.rebuild_heap()
             mid_mem.save()
-            print(f"Update complete: Segment {sid} heat has been reset.")
+            # print(f"Update complete: Segment {sid} heat has been reset.")
 
 def generate_system_response_with_meta(query, short_mem, long_mem, retrieval_queue, long_konwledge, client, sample_id, speaker_a, speaker_b, meta_data):
     """
@@ -191,7 +191,7 @@ def process_conversation(conversation_data):
 
 def main():
     # 直接处理整个数据集，不需要命令行参数
-    print("开始处理整个locomo10数据集...")
+    # print("开始处理整个locomo10数据集...")
     
     # 创建记忆文件存储目录
     os.makedirs("mem_tmp_loco_final", exist_ok=True)
@@ -200,12 +200,12 @@ def main():
     try:
         with open("locomo10.json", "r", encoding="utf-8") as f:
             dataset = json.load(f)
-        print(f"成功加载数据集，共 {len(dataset)} 个样本")
+        # print(f"成功加载数据集，共 {len(dataset)} 个样本")
     except FileNotFoundError:
-        print("错误：找不到 locomo10.json 文件，请确保文件在当前目录中")
+        # print("错误：找不到 locomo10.json 文件，请确保文件在当前目录中")
         return
     except Exception as e:
-        print(f"加载数据集时出错：{e}")
+        # print(f"加载数据集时出错：{e}")
         return
     
     # 处理整个数据集，不进行切片
@@ -218,7 +218,7 @@ def main():
     total_samples = len(dataset)
     
     for idx, sample in enumerate(dataset):
-        print(f"正在处理样本 {idx + 1}/{total_samples}: {sample.get('sample_id', 'unknown')}")
+        # print(f"正在处理样本 {idx + 1}/{total_samples}: {sample.get('sample_id', 'unknown')}")
         
         sample_id = sample.get("sample_id", "unknown_sample")
         conversation_data = sample["conversation"]
@@ -228,7 +228,7 @@ def main():
         processed_dialogs = process_conversation(conversation_data)
         
         if not processed_dialogs:
-            print(f"样本 {sample_id} 没有有效的对话数据，跳过")
+            # print(f"样本 {sample_id} 没有有效的对话数据，跳过")
             continue
             
         speaker_a = conversation_data["speaker_a"]
@@ -251,7 +251,7 @@ def main():
         # Process QA pairs
         qa_count = len(qa_pairs)
         for qa_idx, qa in tqdm(enumerate(qa_pairs),desc=f"handling qa for sample-idx: {idx}"):
-            print(f"  处理问答 {qa_idx + 1}/{qa_count}")
+            # print(f"  处理问答 {qa_idx + 1}/{qa_count}")
             question = qa["question"]
             original_answer = qa.get("answer", "")
             category = qa["category"]
@@ -306,16 +306,16 @@ def main():
         try:
             with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(results, f, ensure_ascii=False, indent=2)
-            print(f"样本 {idx + 1} 处理完成，结果已保存到 {output_file}")
+            # print(f"样本 {idx + 1} 处理完成，结果已保存到 {output_file}")
         except Exception as e:
-            print(f"保存结果时出错：{e}")
+            # print(f"保存结果时出错：{e}")
     
     # 最终保存
     try:
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
     except Exception as e:
-        print(f"最终保存结果时出错：{e}")
+        # print(f"最终保存结果时出错：{e}")
 
 if __name__ == "__main__":
     main()

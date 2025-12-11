@@ -31,11 +31,11 @@ class OpenAIClient:
     def __init__(self, api_key, base_url):
         self.api_key = api_key
         self.base_url = base_url
-        openai.api_key = self.api_key
-        openai.api_base = self.base_url
+        # openai.api_key = self.api_key
+        # openai.base_url = self.base_url
 
     def chat_completion(self, model, messages, temperature=0.7, max_tokens=2000):
-        print("调用 GPT 接口，模型:", model)
+        # print("调用 GPT 接口，模型:", model)
         response = gpt_client.chat.completions.create(
             model=model,
             messages=messages,
@@ -96,7 +96,7 @@ Conversation:
         {"role": "user", "content": prompt}
     ]
 
-    print("Analyzing assistant knowledge...")
+    # print("Analyzing assistant knowledge...")
     result = gpt_generate_answer(prompt, messages, client)
     
     # Parse output
@@ -112,7 +112,7 @@ def gpt_summarize(dialogs, client):
         {"role": "system", "content": "You are an expert in summarizing dialogue topics, please generate a concise and precise summary."},
         {"role": "user", "content": prompt}
     ]
-    print("调用 GPT 生成主题摘要...")
+    # print("调用 GPT 生成主题摘要...")
     return gpt_generate_answer(prompt, messages, client)
 
 def gpt_generate_multi_summary(text, client):
@@ -134,7 +134,7 @@ def gpt_generate_multi_summary(text, client):
         {"role": "system", "content": "You are an expert in analyzing dialogue topics. No more than two topics."},
         {"role": "user", "content": prompt}
     ]
-    print("调用 GPT 生成多子主题摘要...")
+    # print("调用 GPT 生成多子主题摘要...")
     response_text = gpt_generate_answer(prompt, messages, client)
     import json
     try:
@@ -162,7 +162,7 @@ def gpt_generate_multi_summary(text, client):
 #         {"role": "system", "content": "You are a professional user profile analyst who can also identify user private data. Please strictly follow the template for output."},
 #         {"role": "user", "content": prompt}
 #     ]
-#     print("调用 GPT 分析用户画像和私有数据...")
+#     # print("调用 GPT 分析用户画像和私有数据...")
 #     result_text = gpt_generate_answer(prompt, messages, client)
 #     profile, private = "", ""
 #     parts = result_text.split("【User Private Data】")
@@ -222,7 +222,7 @@ def gpt_generate_multi_summary(text, client):
 #         {"role": "user", "content": prompt}
 #     ]
 
-#     print("Running personality analysis...")
+#     # print("Running personality analysis...")
 #     result = gpt_generate_answer(prompt, messages, client)
     
 #     # Parse output
@@ -284,7 +284,7 @@ Conversation:
         {"role": "user", "content": prompt}
     ]
 
-    print("Running personality and user data analysis...")
+    # print("Running personality and user data analysis...")
     result = gpt_generate_answer(prompt, messages, client)
     
     # Parse output
@@ -347,7 +347,7 @@ The generated content should not exceed 1500 words
         {"role": "user", "content": prompt}
     ]
 
-    print("Updating user profile dynamically...")
+    # print("Updating user profile dynamically...")
     return gpt_generate_answer(prompt, messages, client)
 
 def gpt_extract_theme(answer_text, client):
@@ -356,7 +356,7 @@ def gpt_extract_theme(answer_text, client):
         {"role": "system", "content": "You are an expert in extracting conversation topics."},
         {"role": "user", "content": prompt}
     ]
-    print("调用 GPT 提取主题总结...")
+    # print("调用 GPT 提取主题总结...")
     return gpt_generate_answer(prompt, messages, client)
 
 def llm_extract_keywords(text, client):
@@ -365,7 +365,7 @@ def llm_extract_keywords(text, client):
         {"role": "system", "content": "You are a keyword extraction expert. Please extract the keywords of the conversation topic."},
         {"role": "user", "content": prompt}
     ]
-    print("调用 GPT 提取关键词...")
+    # print("调用 GPT 提取关键词...")
     keywords_text =gpt_generate_answer(prompt, messages, client)
     keywords = [w.strip() for w in keywords_text.split(",") if w.strip()]
     return set(keywords)

@@ -31,14 +31,14 @@ class LongTermMemory:
             "data": updated_data,
             "last_updated": get_timestamp()
         }
-        print("长期记忆：更新用户画像。")
+        # print("长期记忆：更新用户画像。")
         self.save()
     def add_assistant_knowledge(self, knowledge_text):
         """
         添加助手相关的知识或特性
         """
         if knowledge_text.strip() == "" or knowledge_text.strip() == "- None" or knowledge_text.strip() == "- None.":
-            print("长期记忆：助手知识为空，不保存。")
+            # print("长期记忆：助手知识为空，不保存。")
             return
         vec = get_embedding(knowledge_text)
         vec = normalize_vector(vec).tolist()
@@ -48,7 +48,7 @@ class LongTermMemory:
             "knowledge_embedding": vec
         }
         self.assistant_knowledge.append(entry)
-        print("长期记忆：添加助手知识。")
+        # print("长期记忆：添加助手知识。")
         self.save()
 
     def get_assistant_knowledge(self):
@@ -67,7 +67,7 @@ class LongTermMemory:
 
     def add_knowledge(self, knowledge_text):
         if knowledge_text.strip() == "" or knowledge_text.strip() == "- None"or knowledge_text.strip() == "- None.":
-            print("长期记忆：私有知识为空，不保存。")
+            # print("长期记忆：私有知识为空，不保存。")
             return
         vec = get_embedding(knowledge_text)
         vec = normalize_vector(vec).tolist()
@@ -77,7 +77,7 @@ class LongTermMemory:
             "knowledge_embedding": vec
         }
         self.knowledge_base.append(entry)
-        print("长期记忆：添加私有知识。")
+        # print("长期记忆：添加私有知识。")
         self.save()
 
     def get_knowledge(self):
@@ -106,7 +106,7 @@ class LongTermMemory:
                 continue
             if dist >= threshold:
                 results.append(self.knowledge_base[idx])
-        print(f"长期记忆：检索到 {len(results)} 个匹配知识。")
+        # print(f"长期记忆：检索到 {len(results)} 个匹配知识。")
         return results
 
     def save(self):
@@ -117,7 +117,7 @@ class LongTermMemory:
         }
         with open(self.file_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
-        print("长期记忆：保存成功。")
+        # print("长期记忆：保存成功。")
 
     def load(self):
         try:
@@ -126,8 +126,8 @@ class LongTermMemory:
                 self.user_profiles = data.get("user_profiles", {})
                 self.knowledge_base = data.get("knowledge_base", [])
                 self.assistant_knowledge = data.get("assistant_knowledge", [])  # 加载助手知识
-            print("长期记忆：加载成功。")
+            # print("长期记忆：加载成功。")
         except Exception:
             self.user_profiles = {}
             self.knowledge_base = []
-            print("长期记忆：无历史数据。")
+            # print("长期记忆：无历史数据。")

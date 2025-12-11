@@ -163,7 +163,7 @@ Continuous?""".format(
         
         # 3. 将所有用户输入拼接用于主题分析
         input_text = "\n".join([f"User: {page.get('user_input','')}\n" for page in pages])
-        print("动态更新：调用 GPT 生成多子主题摘要...")
+        # print("动态更新：调用 GPT 生成多子主题摘要...")
         multi_summary = gpt_generate_multi_summary(input_text, self.client)
         
         # 4. 按主题分组插入中期记忆
@@ -171,7 +171,7 @@ Continuous?""".format(
             sub_summary = summary_dict.get("content", "")
             sub_key_words = summary_dict.get("keywords", [])
             
-            print(f"动态更新：处理子主题【{summary_dict.get('theme','')}】，插入中期记忆...")
+            # print(f"动态更新：处理子主题【{summary_dict.get('theme','')}】，插入中期记忆...")
             self.mid_term_memory.insert_pages_into_session(
                 sub_summary, 
                 sub_key_words, 
@@ -180,6 +180,6 @@ Continuous?""".format(
             )
 
     def update_long_term(self, user_id, new_profile_data, knowledge_text):
-        print("动态更新：更新长期记忆中的用户画像和私有数据...")
+        # print("动态更新：更新长期记忆中的用户画像和私有数据...")
         self.long_term_memory.update_user_profile(user_id, new_profile_data)
         self.long_term_memory.add_knowledge(knowledge_text)

@@ -1,1 +1,9 @@
 plots/*.json
+memoryos-pypi/__pycache__/
+data_memoryos_demo/
+data_memoryos_routing_on/
+data_memoryos_routing_off/
+eval/LongMemEval/
+data/
+*_tmp_*/
+*/__pycache__/
