@@ -308,14 +308,14 @@ def main():
                 json.dump(results, f, ensure_ascii=False, indent=2)
             # print(f"样本 {idx + 1} 处理完成，结果已保存到 {output_file}")
         except Exception as e:
-            # print(f"保存结果时出错：{e}")
+            print(f"保存结果时出错：{e}")
     
     # 最终保存
     try:
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
     except Exception as e:
-        # print(f"最终保存结果时出错：{e}")
+        print(f"最终保存结果时出错：{e}")
 
 if __name__ == "__main__":
     main()
